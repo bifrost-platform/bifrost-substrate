@@ -74,15 +74,7 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 		preservation: Preservation,
 		force: Fortitude,
 	) -> Self::Balance {
-		let a = Self::account(who);
-		let mut untouchable = Zero::zero();
-		if force == Polite {
-			// Frozen balance applies to total. Anything on hold therefore gets discounted from the
-			// limit given by the freezes.
-			untouchable = a.frozen.saturating_add(a.reserved);
-		}
-		// Liquid balance is what is neither on hold nor frozen/required for provider.
-		a.free.saturating_sub(untouchable)
+		Self::account(who).usable()
 	}
 	fn can_deposit(
 		who: &T::AccountId,
