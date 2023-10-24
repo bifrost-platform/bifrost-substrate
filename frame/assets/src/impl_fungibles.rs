@@ -59,6 +59,16 @@ impl<T: Config<I>, I: 'static> fungibles::Inspect<<T as SystemConfig>::AccountId
 			.unwrap_or(Zero::zero())
 	}
 
+	fn evm_reducible_balance(
+		asset: Self::AssetId,
+		who: &<T as SystemConfig>::AccountId,
+		preservation: Preservation,
+		_: Fortitude,
+	) -> Self::Balance {
+		Pallet::<T, I>::reducible_balance(asset, who, !matches!(preservation, Expendable))
+			.unwrap_or(Zero::zero())
+	}
+
 	fn can_deposit(
 		asset: Self::AssetId,
 		who: &<T as SystemConfig>::AccountId,
