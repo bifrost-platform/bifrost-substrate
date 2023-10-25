@@ -220,7 +220,7 @@ pub trait Currency<AccountId> {
 	/// account.
 	///
 	/// Always less than or equal to `balance()`.
-	fn evm_reducible_balance(
+	fn transferrable_balance(
 		who: &AccountId,
 		preservation: Preservation,
 	) -> Self::Balance;
@@ -330,7 +330,7 @@ impl<AccountId> Currency<AccountId> for () {
 	) -> SignedImbalance<Self::Balance, Self::PositiveImbalance> {
 		SignedImbalance::Positive(())
 	}
-	fn evm_reducible_balance(_: &AccountId, _: Preservation) -> u32 {
+	fn transferrable_balance(_: &AccountId, _: Preservation) -> u32 {
 		0
 	}
 }

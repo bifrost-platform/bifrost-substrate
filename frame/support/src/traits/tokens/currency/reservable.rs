@@ -344,11 +344,11 @@ impl<
 	) -> SignedImbalance<Self::Balance, Self::PositiveImbalance> {
 		NamedReservable::make_free_balance_be(who, balance)
 	}
-	fn evm_reducible_balance(
+	fn transferrable_balance(
 		who: &AccountId,
 		preservation: Preservation,
 	) -> Self::Balance {
-		NamedReservable::evm_reducible_balance(who, preservation)
+		NamedReservable::transferrable_balance(who, preservation)
 	}
 }
 impl<

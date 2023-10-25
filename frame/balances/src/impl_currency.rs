@@ -477,7 +477,7 @@ where
 		.unwrap_or_else(|_| SignedImbalance::Positive(Self::PositiveImbalance::zero()))
 	}
 
-	fn evm_reducible_balance(
+	fn transferrable_balance(
 		who: &T::AccountId,
 		preservation: Preservation,
 	) -> Self::Balance {
