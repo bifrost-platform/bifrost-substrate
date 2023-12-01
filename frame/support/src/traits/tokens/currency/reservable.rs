@@ -23,7 +23,7 @@ use sp_core::Get;
 use super::{super::misc::BalanceStatus, Currency};
 use crate::{
 	dispatch::{DispatchError, DispatchResult},
-	traits::{ExistenceRequirement, SignedImbalance, WithdrawReasons},
+	traits::{ExistenceRequirement, SignedImbalance, WithdrawReasons, tokens::Preservation},
 };
 
 /// A currency where funds can be reserved from the user.
@@ -343,6 +343,12 @@ impl<
 		balance: Self::Balance,
 	) -> SignedImbalance<Self::Balance, Self::PositiveImbalance> {
 		NamedReservable::make_free_balance_be(who, balance)
+	}
+	fn transferrable_balance(
+		who: &AccountId,
+		preservation: Preservation,
+	) -> Self::Balance {
+		NamedReservable::transferrable_balance(who, preservation)
 	}
 }
 impl<

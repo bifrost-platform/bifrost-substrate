@@ -63,6 +63,18 @@ impl<
 	) -> Self::Balance {
 		<F as fungibles::Inspect<AccountId>>::reducible_balance(A::get(), who, preservation, force)
 	}
+	fn evm_reducible_balance(
+		who: &AccountId,
+		preservation: Preservation,
+		force: Fortitude,
+	) -> Self::Balance {
+		<F as fungibles::Inspect<AccountId>>::evm_reducible_balance(
+			A::get(),
+			who,
+			preservation,
+			force,
+		)
+	}
 	fn can_deposit(
 		who: &AccountId,
 		amount: Self::Balance,

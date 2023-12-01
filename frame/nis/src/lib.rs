@@ -134,6 +134,9 @@ impl<T> FunInspect<T> for NoCounterpart<T> {
 	fn reducible_balance(_: &T, _: Preservation, _: Fortitude) -> u32 {
 		0
 	}
+	fn evm_reducible_balance(_: &T, _: Preservation, _: Fortitude) -> u32 {
+		0
+	}
 	fn can_deposit(_: &T, _: u32, _: Provenance) -> DepositConsequence {
 		DepositConsequence::Success
 	}

@@ -68,17 +68,43 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 		// Liquid balance is what is neither on hold nor frozen/required for provider.
 		a.free.saturating_sub(untouchable)
 	}
+	/// This method will only be used until migrations to fungible traits are done.
+	fn evm_reducible_balance(
+		who: &T::AccountId,
+		preservation: Preservation,
+		force: Fortitude,
+	) -> Self::Balance {
+		let a = Self::account(who);
+		let mut untouchable = Zero::zero();
+		if force == Polite {
+			// In the case for EVM, we only care about frozen balance.
+			untouchable = a.frozen;
+		}
+		// If we want to keep our provider ref..
+		if preservation == Preserve
+			// ..or we don't want the account to die and our provider ref is needed for it to live..
+			|| preservation == Protect && !a.free.is_zero() &&
+				frame_system::Pallet::<T>::providers(who) == 1
+			// ..or we don't care about the account dying but our provider ref is required..
+			|| preservation == Expendable && !a.free.is_zero() &&
+				!frame_system::Pallet::<T>::can_dec_provider(who)
+		{
+			// ..then the ED needed..
+			untouchable = untouchable.max(T::ExistentialDeposit::get());
+		}
+		a.free.saturating_sub(untouchable)
+	}
 	fn can_deposit(
 		who: &T::AccountId,
 		amount: Self::Balance,
 		provenance: Provenance,
 	) -> DepositConsequence {
 		if amount.is_zero() {
-			return DepositConsequence::Success
+			return DepositConsequence::Success;
 		}
 
 		if provenance == Minted && TotalIssuance::<T, I>::get().checked_add(&amount).is_none() {
-			return DepositConsequence::Overflow
+			return DepositConsequence::Overflow;
 		}
 
 		let account = Self::account(who);
@@ -103,11 +129,11 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 		amount: Self::Balance,
 	) -> WithdrawConsequence<Self::Balance> {
 		if amount.is_zero() {
-			return WithdrawConsequence::Success
+			return WithdrawConsequence::Success;
 		}
 
 		if TotalIssuance::<T, I>::get().checked_sub(&amount).is_none() {
-			return WithdrawConsequence::Underflow
+			return WithdrawConsequence::Underflow;
 		}
 
 		let account = Self::account(who);
@@ -118,7 +144,7 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 
 		let liquid = Self::reducible_balance(who, Expendable, Polite);
 		if amount > liquid {
-			return WithdrawConsequence::Frozen
+			return WithdrawConsequence::Frozen;
 		}
 
 		// Provider restriction - total account balance cannot be reduced to zero if it cannot
@@ -130,7 +156,7 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 			if frame_system::Pallet::<T>::can_dec_provider(who) {
 				WithdrawConsequence::ReducedToZero(new_free_balance)
 			} else {
-				return WithdrawConsequence::WouldDie
+				return WithdrawConsequence::WouldDie;
 			}
 		} else {
 			WithdrawConsequence::Success
@@ -140,7 +166,7 @@ impl<T: Config<I>, I: 'static> fungible::Inspect<T::AccountId> for Pallet<T, I> 
 
 		// Eventual free funds must be no less than the frozen balance.
 		if new_total_balance < account.frozen {
-			return WithdrawConsequence::Frozen
+			return WithdrawConsequence::Frozen;
 		}
 
 		success
@@ -232,11 +258,11 @@ impl<T: Config<I>, I: 'static> fungible::InspectHold<T::AccountId> for Pallet<T,
 	}
 	fn hold_available(reason: &Self::Reason, who: &T::AccountId) -> bool {
 		if frame_system::Pallet::<T>::providers(who) == 0 {
-			return false
+			return false;
 		}
 		let holds = Holds::<T, I>::get(who);
 		if holds.is_full() && !holds.iter().any(|x| &x.id == reason) {
-			return false
+			return false;
 		}
 		true
 	}
@@ -302,7 +328,7 @@ impl<T: Config<I>, I: 'static> fungible::InspectFreeze<T::AccountId> for Pallet<
 impl<T: Config<I>, I: 'static> fungible::MutateFreeze<T::AccountId> for Pallet<T, I> {
 	fn set_freeze(id: &Self::Id, who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		if amount.is_zero() {
-			return Self::thaw(id, who)
+			return Self::thaw(id, who);
 		}
 		let mut locks = Freezes::<T, I>::get(who);
 		if let Some(i) = locks.iter_mut().find(|x| &x.id == id) {
@@ -317,7 +343,7 @@ impl<T: Config<I>, I: 'static> fungible::MutateFreeze<T::AccountId> for Pallet<T
 
 	fn extend_freeze(id: &Self::Id, who: &T::AccountId, amount: Self::Balance) -> DispatchResult {
 		if amount.is_zero() {
-			return Ok(())
+			return Ok(());
 		}
 		let mut locks = Freezes::<T, I>::get(who);
 		if let Some(i) = locks.iter_mut().find(|x| &x.id == id) {

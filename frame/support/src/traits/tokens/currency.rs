@@ -19,7 +19,7 @@
 
 use super::{
 	imbalance::{Imbalance, SignedImbalance},
-	misc::{Balance, ExistenceRequirement, WithdrawReasons},
+	misc::{Balance, ExistenceRequirement, WithdrawReasons}, Preservation,
 };
 use crate::{
 	dispatch::{DispatchError, DispatchResult},
@@ -213,6 +213,17 @@ pub trait Currency<AccountId> {
 		who: &AccountId,
 		balance: Self::Balance,
 	) -> SignedImbalance<Self::Balance, Self::PositiveImbalance>;
+
+	/// Get the maximum amount that `who` can withdraw/transfer successfully based on whether the
+	/// account should be kept alive (`preservation`) or whether we are willing to force the
+	/// reduction and potentially go below user-level restrictions on the minimum amount of the
+	/// account.
+	///
+	/// Always less than or equal to `balance()`.
+	fn transferrable_balance(
+		who: &AccountId,
+		preservation: Preservation,
+	) -> Self::Balance;
 }
 
 /// A non-const `Get` implementation parameterised by a `Currency` impl which provides the result
@@ -318,5 +329,8 @@ impl<AccountId> Currency<AccountId> for () {
 		_: Self::Balance,
 	) -> SignedImbalance<Self::Balance, Self::PositiveImbalance> {
 		SignedImbalance::Positive(())
+	}
+	fn transferrable_balance(_: &AccountId, _: Preservation) -> u32 {
+		0
 	}
 }
