@@ -9325,6 +9325,7 @@ dependencies = [
  "log",
  "once_cell",
  "parity-scale-codec",
+ "parking_lot 0.12.1",
  "paste",
  "rustix 0.36.13",
  "sc-allocator",

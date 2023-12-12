@@ -152,13 +152,6 @@ fn bench_call_instance(c: &mut Criterion) {
 
 	let strategies = [
 		(
-			"legacy_instance_reuse",
-			Method::Compiled {
-				instantiation_strategy: InstantiationStrategy::LegacyInstanceReuse,
-				precompile: false,
-			},
-		),
-		(
 			"recreate_instance_vanilla",
 			Method::Compiled {
 				instantiation_strategy: InstantiationStrategy::RecreateInstance,

@@ -16,9 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#[cfg(target_os = "linux")]
-mod linux;
-
 use assert_matches::assert_matches;
 use codec::{Decode, Encode};
 use sc_executor_common::{
@@ -81,14 +78,6 @@ macro_rules! test_wasm_execution {
 					instantiation_strategy: sc_executor_wasmtime::InstantiationStrategy::Pooling
 				});
 			}
-
-			#[test]
-			fn [<$method_name _compiled_legacy_instance_reuse>]() {
-				let _ = sp_tracing::try_init_simple();
-				$method_name(WasmExecutionMethod::Compiled {
-					instantiation_strategy: sc_executor_wasmtime::InstantiationStrategy::LegacyInstanceReuse
-				});
-			}
 		}
 	};
 }
@@ -129,8 +118,9 @@ fn call_not_existing_function(wasm_method: WasmExecutionMethod) {
 	match call_in_wasm("test_calling_missing_external", &[], wasm_method, &mut ext).unwrap_err() {
 		Error::AbortedDueToTrap(error) => {
 			let expected = match wasm_method {
-				WasmExecutionMethod::Compiled { .. } =>
-					"call to a missing function env:missing_external",
+				WasmExecutionMethod::Compiled { .. } => {
+					"call to a missing function env:missing_external"
+				},
 			};
 			assert_eq!(error.message, expected);
 		},
@@ -148,8 +138,9 @@ fn call_yet_another_not_existing_function(wasm_method: WasmExecutionMethod) {
 	{
 		Error::AbortedDueToTrap(error) => {
 			let expected = match wasm_method {
-				WasmExecutionMethod::Compiled { .. } =>
-					"call to a missing function env:yet_another_missing_external",
+				WasmExecutionMethod::Compiled { .. } => {
+					"call to a missing function env:yet_another_missing_external"
+				},
 			};
 			assert_eq!(error.message, expected);
 		},
@@ -750,8 +741,9 @@ fn unreachable_intrinsic(wasm_method: WasmExecutionMethod) {
 	match call_in_wasm("test_unreachable_intrinsic", &[], wasm_method, &mut ext).unwrap_err() {
 		Error::AbortedDueToTrap(error) => {
 			let expected = match wasm_method {
-				WasmExecutionMethod::Compiled { .. } =>
-					"wasm trap: wasm `unreachable` instruction executed",
+				WasmExecutionMethod::Compiled { .. } => {
+					"wasm trap: wasm `unreachable` instruction executed"
+				},
 			};
 			assert_eq!(error.message, expected);
 		},
